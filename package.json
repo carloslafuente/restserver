@@ -1,0 +1,23 @@
+{
+  "name": "restserver",
+  "version": "1.0.0",
+  "description": "Aplicación restserver del curso de Nodejs de Fernando Herrera",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/carloslafuente/restserver.git"
+  },
+  "author": "Carlos La Fuente",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/carloslafuente/restserver/issues"
+  },
+  "homepage": "https://github.com/carloslafuente/restserver#readme",
+  "dependencies": {
+    "body-parser": "^1.19.0",
+    "express": "^4.17.1"
+  }
+}
