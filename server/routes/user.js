@@ -3,12 +3,39 @@ const app = express();
 const User = require('../models/user');
 const bcrypt = require('bcrypt');
 const _ = require('underscore');
-const user = require('../models/user');
 
 app.get('/user', (req, res) => {
-  
-  user.find({}).exec()
+  let start = Number(req.query.start) || 0;
+  let limit = Number(req.query.limit) || 5;
 
+  User.find({ status: true }, 'name email role status google')
+    .skip(start)
+    .limit(limit)
+    .exec((error, result) => {
+      if (error) {
+        return res.status(400).json({
+          ok: false,
+          message: error.message,
+          error,
+        });
+      }
+
+      User.countDocuments({ status: true }, (error, data) => {
+        if (error) {
+          return res.status(400).json({
+            ok: false,
+            message: error.message,
+            error,
+          });
+        }
+
+        res.status(200).json({
+          ok: true,
+          users: result,
+          userNumber: data,
+        });
+      });
+    });
 });
 
 app.post('/user', (req, res) => {
@@ -20,17 +47,18 @@ app.post('/user', (req, res) => {
     role: body.role,
   });
 
-  user.save((err, result) => {
-    if (err) {
+  user.save((error, result) => {
+    if (error) {
       return res.status(400).json({
         ok: false,
-        message: err.message,
-        err,
+        message: error.message,
+        error,
       });
     }
+
     res.json({
       ok: true,
-      user: result,
+      users: result,
     });
   });
 });
@@ -69,12 +97,12 @@ app.put('/user/:id', (req, res) => {
     id,
     body,
     { new: true, runValidators: true },
-    (err, result) => {
-      if (err) {
+    (error, result) => {
+      if (error) {
         return res.status(400).json({
           ok: false,
-          message: err.message,
-          err,
+          message: error.message,
+          error,
         });
       }
       res.json({
@@ -86,7 +114,45 @@ app.put('/user/:id', (req, res) => {
 });
 
 app.delete('/user/:id', (req, res) => {
-  res.json('delete User');
+  let id = req.params.id;
+  // User.findByIdAndRemove(id, {}, (error, result) => {
+  //   if (error) {
+  //     return res.status(400).json({
+  //       ok: false,
+  //       message: error.message,
+  //       error,
+  //     });
+  //   }
+
+  //   if (result === null) {
+  //     return res.status(400).json({
+  //       ok: false,
+  //       error: {
+  //         message: `Usuario ${id} no encontrado`,
+  //       },
+  //     });
+  //   }
+
+  //   res.json({
+  //     ok: true,
+  //     user: result,
+  //   });
+  // });
+
+  let user = { status: false };
+  User.findByIdAndUpdate(id, user, { new: true }, (error, result) => {
+    if (error) {
+      return res.status(400).json({
+        ok: false,
+        message: error.message,
+        error,
+      });
+    }
+    res.json({
+      ok: true,
+      user: result,
+    });
+  });
 });
 
 module.exports = app;
