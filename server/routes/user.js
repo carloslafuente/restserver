@@ -3,8 +3,9 @@ const app = express();
 const User = require('../models/user');
 const bcrypt = require('bcrypt');
 const _ = require('underscore');
+const { verifyToken, verifyRole } = require('../middlewares/auth');
 
-app.get('/user', (req, res) => {
+app.get('/user', verifyToken, (req, res) => {
   let start = Number(req.query.start) || 0;
   let limit = Number(req.query.limit) || 5;
 
@@ -38,7 +39,7 @@ app.get('/user', (req, res) => {
     });
 });
 
-app.post('/user', (req, res) => {
+app.post('/user', [verifyToken, verifyRole], (req, res) => {
   let body = req.body;
   let user = new User({
     name: body.name,
@@ -63,7 +64,7 @@ app.post('/user', (req, res) => {
   });
 });
 
-app.put('/user/:id', (req, res) => {
+app.put('/user/:id', [verifyToken, verifyRole], (req, res) => {
   let id = req.params.id;
   let body = _.pick(req.body, ['name', 'email', 'image', 'role', 'status']);
 
@@ -113,7 +114,7 @@ app.put('/user/:id', (req, res) => {
   );
 });
 
-app.delete('/user/:id', (req, res) => {
+app.delete('/user/:id', [verifyToken, verifyRole], (req, res) => {
   let id = req.params.id;
   // User.findByIdAndRemove(id, {}, (error, result) => {
   //   if (error) {

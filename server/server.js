@@ -7,7 +7,8 @@ const bodyParser = require('body-parser');
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
-app.use(require('./routes/user'));
+// Configuracion global de las rutas
+app.use(require('./routes/index'));
 
 // mongoose.set('useCreateIndex', true);
 mongoose
@@ -15,6 +16,7 @@ mongoose
     useNewUrlParser: true,
     useUnifiedTopology: true,
     useCreateIndex: true,
+    useFindAndModify: false,
   })
   .then((result) => {
     console.log(`Mongo database connected successfully`);
