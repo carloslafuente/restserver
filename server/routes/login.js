@@ -58,15 +58,87 @@ async function verify(token) {
     audience: process.env.CLIENT_ID,
   });
   const payload = ticket.getPayload();
-  console.log(payload);
+  return {
+    name: payload.name,
+    email: payload.email,
+    image: payload.picture,
+    google: true,
+  };
 }
 
-app.post('/google', (req, res) => {
+app.post('/google', async (req, res) => {
   let googleToken = req.body.googleToken;
-  res.json({
-    googleToken,
+  let googleUser = await verify(googleToken).catch((error) => {
+    return res.status(403).json({
+      ok: false,
+      error,
+    });
   });
-  verify(googleToken).catch(console.error);
+
+  User.findOne({ email: googleUser.email }, (error, result) => {
+    if (error) {
+      return res.status(500).json({
+        ok: false,
+        error,
+      });
+    }
+    if (result) {
+      if (!result.google) {
+        return res.status(400).json({
+          ok: false,
+          error: {
+            message: `Debe de usar su autenticacion por correo y contraseña`,
+          },
+        });
+      } else {
+        const token = jwt.sign(
+          { user: result },
+          process.env.JWT_SECRET.toString(),
+          {
+            expiresIn: process.env.EXPIRATION_VALUE,
+          }
+        );
+        return res.json({
+          ok: true,
+          user: result,
+          token,
+        });
+      }
+    } else {
+      let user = new User();
+
+      user.name = googleUser.name;
+      user.email = googleUser.email;
+      user.image = googleUser.image;
+      user.google = true;
+      user.password = 'XD';
+
+      console.log(user.image);
+
+      user.save((error, data) => {
+        if (error) {
+          return res.status(500).json({
+            ok: false,
+            error,
+          });
+        }
+
+        const token = jwt.sign(
+          { user: result },
+          process.env.JWT_SECRET.toString(),
+          {
+            expiresIn: process.env.EXPIRATION_VALUE,
+          }
+        );
+
+        return res.json({
+          ok: true,
+          user: data,
+          token,
+        });
+      });
+    }
+  });
 });
 
 module.exports = app;
