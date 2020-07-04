@@ -5,7 +5,7 @@ const verifyToken = (req, res, next) => {
   let token = req.get('Authorization');
   jwt.verify(token, process.env.JWT_SECRET.toString(), (error, decoded) => {
     if (error) {
-      res.status(401).json({
+      return res.status(401).json({
         ok: false,
         error,
       });
