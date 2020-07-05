@@ -1,13 +1,113 @@
-require('../config/config');
-const express = require('express');
-const app = express();
-const User = require('../models/user');
+require('../config/config.config');
+const User = require('../models/user.model');
 const bcrypt = require('bcrypt');
+const _ = require('underscore');
 const jwt = require('jsonwebtoken');
 const { OAuth2Client } = require('google-auth-library');
 const client = new OAuth2Client(process.env.CLIENT_ID);
 
-app.post('/login', (req, res) => {
+const getAllUsers = (req, res) => {
+  let start = Number(req.query.start) || 0;
+  let limit = Number(req.query.limit) || 5;
+  User.find({ status: true }, 'name email role status google')
+    .skip(start)
+    .limit(limit)
+    .exec((error, result) => {
+      if (error) {
+        return res.status(400).json({
+          ok: false,
+          message: error.message,
+          error,
+        });
+      }
+
+      User.countDocuments({ status: true }, (error, data) => {
+        if (error) {
+          return res.status(400).json({
+            ok: false,
+            message: error.message,
+            error,
+          });
+        }
+
+        res.status(200).json({
+          ok: true,
+          users: result,
+          userNumber: data,
+        });
+      });
+    });
+};
+
+const createUser = (req, res) => {
+  let body = req.body;
+  let user = new User({
+    name: body.name,
+    email: body.email,
+    password: bcrypt.hashSync(body.password, 10),
+    role: body.role,
+  });
+
+  user.save((error, result) => {
+    if (error) {
+      return res.status(400).json({
+        ok: false,
+        message: error.message,
+        error,
+      });
+    }
+
+    res.json({
+      ok: true,
+      users: result,
+    });
+  });
+};
+
+const updateUser = (req, res) => {
+  let id = req.params.id;
+  let body = _.pick(req.body, ['name', 'email', 'image', 'role', 'status']);
+
+  User.findByIdAndUpdate(
+    id,
+    body,
+    { new: true, runValidators: true },
+    (error, result) => {
+      if (error) {
+        return res.status(400).json({
+          ok: false,
+          message: error.message,
+          error,
+        });
+      }
+      res.json({
+        ok: true,
+        user: result,
+      });
+    }
+  );
+};
+
+const disableUser = (req, res) => {
+  let id = req.params.id;
+
+  let user = { status: false };
+  User.findByIdAndUpdate(id, user, { new: true }, (error, result) => {
+    if (error) {
+      return res.status(400).json({
+        ok: false,
+        message: error.message,
+        error,
+      });
+    }
+    res.json({
+      ok: true,
+      user: result,
+    });
+  });
+};
+
+const loginUser = (req, res) => {
   let body = req.body;
 
   User.findOne({ email: body.email }, (error, result) => {
@@ -50,7 +150,7 @@ app.post('/login', (req, res) => {
       token,
     });
   });
-});
+};
 
 async function verify(token) {
   const ticket = await client.verifyIdToken({
@@ -66,7 +166,7 @@ async function verify(token) {
   };
 }
 
-app.post('/google', async (req, res) => {
+const loginGoogleUser = async (req, res) => {
   let googleToken = req.body.googleToken;
   let googleUser = await verify(googleToken).catch((error) => {
     return res.status(403).json({
@@ -139,6 +239,13 @@ app.post('/google', async (req, res) => {
       });
     }
   });
-});
+};
 
-module.exports = app;
+module.exports = {
+  getAllUsers,
+  createUser,
+  updateUser,
+  disableUser,
+  loginUser,
+  loginGoogleUser,
+};

@@ -1,10 +1,7 @@
-const express = require('express');
-const app = express();
-const { verifyToken, verifyRole } = require('../middlewares/auth');
-const Product = require('../models/product');
+const Product = require('../models/product.model');
 const _ = require('underscore');
 
-app.get('/product', verifyToken, async (req, res) => {
+const getAllProducts = async (req, res) => {
   let products;
   let count;
   let start = Number(req.query.start) || 0;
@@ -37,9 +34,9 @@ app.get('/product', verifyToken, async (req, res) => {
     products,
     count,
   });
-});
+};
 
-app.get('/product/:id', verifyToken, async (req, res) => {
+const getProductById = async (req, res) => {
   let id = req.params.id;
   let products;
   try {
@@ -65,35 +62,9 @@ app.get('/product/:id', verifyToken, async (req, res) => {
     ok: true,
     products,
   });
+};
 
-  // Product.findById(id)
-  //   .where('status')
-  //   .equals(true)
-  //   .populate('creator')
-  //   .populate('category')
-  //   .exec((error, result) => {
-  //     if (error) {
-  //       return res.status(500).json({
-  //         ok: false,
-  //         error,
-  //       });
-  //     }
-  //     if (result === null) {
-  //       return res.status(500).json({
-  //         ok: false,
-  //         error: {
-  //           message: `No existe el producto con el id: ${id}`,
-  //         },
-  //       });
-  //     }
-  //     res.status(200).json({
-  //       ok: true,
-  //       products: result,
-  //     });
-  //   });
-});
-
-app.post('/product', [verifyToken, verifyRole], async (req, res) => {
+const createProduct = async (req, res) => {
   let product = new Product({
     name: req.body.name,
     unitPrice: req.body.unitPrice,
@@ -122,9 +93,9 @@ app.post('/product', [verifyToken, verifyRole], async (req, res) => {
     ok: true,
     products,
   });
-});
+};
 
-app.put('/product/:id', [verifyToken, verifyRole], async (req, res) => {
+const updateProduct = async (req, res) => {
   let id = req.params.id;
   let product = _.pick(req.body, [
     'name',
@@ -155,9 +126,9 @@ app.put('/product/:id', [verifyToken, verifyRole], async (req, res) => {
     ok: true,
     products,
   });
-});
+};
 
-app.delete('/product/:id', [verifyToken, verifyRole], async (req, res) => {
+const disableProduct = async (req, res) => {
   let id = req.params.id;
   let product = {
     status: false,
@@ -185,9 +156,9 @@ app.delete('/product/:id', [verifyToken, verifyRole], async (req, res) => {
     ok: true,
     products,
   });
-});
+};
 
-app.get('/product/find/:term', verifyToken, async (req, res) => {
+const searchProductByTerm = async (req, res) => {
   let term = req.params.term;
   let regex = new RegExp(term, 'i');
   let products;
@@ -216,6 +187,13 @@ app.get('/product/find/:term', verifyToken, async (req, res) => {
     ok: true,
     products,
   });
-});
+};
 
-module.exports = app;
+module.exports = {
+  getAllProducts,
+  getProductById,
+  createProduct,
+  updateProduct,
+  disableProduct,
+  searchProductByTerm,
+};

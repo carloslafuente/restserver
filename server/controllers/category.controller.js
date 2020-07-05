@@ -1,10 +1,7 @@
-const express = require('express');
-const app = express();
 const _ = require('underscore');
-const { verifyToken, verifyRole } = require('../middlewares/auth');
-const Category = require('../models/category');
+const Category = require('../models/category.model');
 
-app.get('/category', verifyToken, (req, res) => {
+const getAllCategories = (req, res) => {
   Category.find({})
     .sort('name')
     .exec((error, result) => {
@@ -45,9 +42,9 @@ app.get('/category', verifyToken, (req, res) => {
         );
       });
     });
-});
+};
 
-app.get('/category/:id', verifyToken, (req, res) => {
+const getCategoryById = (req, res) => {
   let id = req.params.id;
   Category.findById(id, (error, result) => {
     if (error) {
@@ -79,9 +76,9 @@ app.get('/category/:id', verifyToken, (req, res) => {
       });
     });
   });
-});
+};
 
-app.post('/category', [verifyToken, verifyRole], (req, res) => {
+const createCategory = (req, res) => {
   let category = new Category({
     name: req.body.name,
     description: req.body.description,
@@ -109,9 +106,9 @@ app.post('/category', [verifyToken, verifyRole], (req, res) => {
       categories: result,
     });
   });
-});
+};
 
-app.put('/category/:id', [verifyToken, verifyRole], (req, res) => {
+const updateCategory = (req, res) => {
   let id = req.params.id;
   let body = _.pick(req.body, ['name', 'description']);
 
@@ -141,9 +138,9 @@ app.put('/category/:id', [verifyToken, verifyRole], (req, res) => {
       });
     }
   );
-});
+};
 
-app.delete('/category/:id', [verifyToken, verifyRole], (req, res) => {
+const removeCategory = (req, res) => {
   let id = req.params.id;
   Category.findByIdAndRemove(id, (error, result) => {
     if (error) {
@@ -157,6 +154,12 @@ app.delete('/category/:id', [verifyToken, verifyRole], (req, res) => {
       categories: result,
     });
   });
-});
+};
 
-module.exports = app;
+module.exports = {
+  getAllCategories,
+  getCategoryById,
+  createCategory,
+  updateCategory,
+  removeCategory,
+};
