@@ -4,6 +4,8 @@ const bcrypt = require('bcrypt');
 const _ = require('underscore');
 const jwt = require('jsonwebtoken');
 const { OAuth2Client } = require('google-auth-library');
+const { response } = require('../routes/user.route');
+const { reject } = require('underscore');
 const client = new OAuth2Client(process.env.CLIENT_ID);
 
 const getAllUsers = (req, res) => {
@@ -67,7 +69,6 @@ const createUser = (req, res) => {
 const updateUser = (req, res) => {
   let id = req.params.id;
   let body = _.pick(req.body, ['name', 'email', 'image', 'role', 'status']);
-
   User.findByIdAndUpdate(
     id,
     body,
@@ -241,6 +242,10 @@ const loginGoogleUser = async (req, res) => {
   });
 };
 
+const getUserById = (id) => {
+  return User.findById(id);
+};
+
 module.exports = {
   getAllUsers,
   createUser,
@@ -248,4 +253,5 @@ module.exports = {
   disableUser,
   loginUser,
   loginGoogleUser,
+  getUserById,
 };
