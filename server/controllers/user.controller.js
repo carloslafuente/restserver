@@ -242,7 +242,7 @@ const loginGoogleUser = async (req, res) => {
   });
 };
 
-const getUserById = (id) => {
+const getUserByIdFile = (id) => {
   return User.findById(id);
 };
 
@@ -253,5 +253,5 @@ module.exports = {
   disableUser,
   loginUser,
   loginGoogleUser,
-  getUserById,
+  getUserByIdFile,
 };

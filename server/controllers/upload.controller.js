@@ -1,4 +1,5 @@
 const user = require('../controllers/user.controller');
+const product = require('../controllers/product.controller');
 const { v1: uuidv1 } = require('uuid');
 const fs = require('fs');
 const path = require('path');
@@ -50,15 +51,20 @@ const uploadFile = (req, res) => {
         error,
       });
     }
-
-    userImage(id, res, newFileName, type);
+    
+    switch (type) {
+      case 'users':
+        uploadUserImage(id, res, newFileName, type);
+      case 'products':
+        uploadProductImage(id, res, newFileName, type);
+    }
   });
 };
 
-const userImage = async (id, res, fileName, type) => {
+const uploadUserImage = async (id, res, fileName, type) => {
   let userToUpdate;
   try {
-    userToUpdate = await user.getUserById(id);
+    userToUpdate = await user.getUserByIdFile(id);
     if (!userToUpdate) {
       deleteImage(fileName, type);
 
@@ -93,7 +99,43 @@ const userImage = async (id, res, fileName, type) => {
   }
 };
 
-const productImage = () => {};
+const uploadProductImage = async (id, res, fileName, type) => {
+  let productToUpdate;
+  try {
+    productToUpdate = await product.getProductByIdFile(id);
+    if (!productToUpdate) {
+      deleteImage(fileName, type);
+
+      return res.status(400).json({
+        ok: false,
+        error: {
+          message: `El producto no existe`,
+        },
+      });
+    }
+
+    deleteImage(productToUpdate.image, type);
+
+    productToUpdate.image = fileName;
+    let req = {
+      params: {
+        id: productToUpdate.id,
+      },
+      body: {
+        image: productToUpdate.image,
+      },
+    };
+
+    product.updateProduct(req, res);
+  } catch (error) {
+    deleteImage(fileName, type);
+
+    res.status(500).json({
+      ok: false,
+      error,
+    });
+  }
+};
 
 const deleteImage = (imageName, type) => {
   let pathFile = path.resolve(__dirname, `../../uploads/${type}/${imageName}`);

@@ -102,6 +102,7 @@ const updateProduct = async (req, res) => {
     'unitPrice',
     'description',
     'category',
+    'image',
   ]);
   let products;
   try {
@@ -189,6 +190,10 @@ const searchProductByTerm = async (req, res) => {
   });
 };
 
+const getProductByIdFile = async (id) => {
+  return Product.findById(id);
+};
+
 module.exports = {
   getAllProducts,
   getProductById,
@@ -196,4 +201,5 @@ module.exports = {
   updateProduct,
   disableProduct,
   searchProductByTerm,
+  getProductByIdFile,
 };

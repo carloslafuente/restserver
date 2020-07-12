@@ -29,4 +29,19 @@ const verifyRole = (req, res, next) => {
   next();
 };
 
-module.exports = { verifyToken, verifyRole };
+// Verificamos el token de las imagenes
+const verifyImageToken = (req, res, next) => {
+  let token = req.query.token;
+  jwt.verify(token, process.env.JWT_SECRET.toString(), (error, decoded) => {
+    if (error) {
+      return res.status(401).json({
+        ok: false,
+        error,
+      });
+    }
+    req.user = decoded.user;
+    next();
+  });
+};
+
+module.exports = { verifyToken, verifyRole, verifyImageToken };
