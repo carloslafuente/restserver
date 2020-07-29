@@ -4,8 +4,6 @@ const bcrypt = require('bcrypt');
 const _ = require('underscore');
 const jwt = require('jsonwebtoken');
 const { OAuth2Client } = require('google-auth-library');
-const { response } = require('../routes/user.route');
-const { reject } = require('underscore');
 const client = new OAuth2Client(process.env.CLIENT_ID);
 
 const getAllUsers = (req, res) => {
